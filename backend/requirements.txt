@@ -1,0 +1,11 @@
+Django
+djangorestframework
+psycopg2
+python-dotenv
+django-cors-headers
+requests
+django-environ
+djangorestframework-simplejwt
+geopy
+openai
+django-redis
