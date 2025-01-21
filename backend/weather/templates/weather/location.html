@@ -1,0 +1,190 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Location</title>
+</head>
+<body>
+
+<h2>Click the button to get your location</h2>
+<button onclick="getLocation()">Get Location</button>
+
+<p id="status"></p>
+
+<script>
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendPosition, showError);
+    } else {
+        document.getElementById("status").innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+
+function sendPosition(position) {
+    let latitude = position.coords.latitude;
+    let longitude = position.coords.longitude;
+
+    document.getElementById("status").innerHTML = `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+    // Send data to Django backend using fetch API
+    fetch('/get-location/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // CSRF token for Django security
+        },
+        body: JSON.stringify({ lat: latitude, lon: longitude })
+    })
+    .then(response => response.json())
+    .then(data => console.log('Response:', data))
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to get CSRF token (required for Django POST requests)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showError(error) {
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            document.getElementById("status").innerHTML = "User denied the request for Geolocation.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            document.getElementById("status").innerHTML = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            document.getElementById("status").innerHTML = "The request to get user location timed out.";
+            break;
+        case error.UNKNOWN_ERROR:
+            document.getElementById("status").innerHTML = "An unknown error occurred.";
+            break;
+    }
+}
+</script>
+
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather & Geolocation</title>
+    <style>
+        .weather-box {
+            border: 1px solid #ddd;
+            padding: 15px;
+            width: 300px;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Click the button to get your location and weather</h2>
+<button onclick="getLocation()">Get Weather</button>
+
+<p id="status"></p>
+
+<div id="weather" class="weather-box" style="display: none;">
+    <img id="weather-icon" src="" alt="Weather Icon">
+    <h3 id="city"></h3>
+    <p><strong>Temperature:</strong> <span id="temperature"></span>°C</p>
+    <p><strong>Description:</strong> <span id="description"></span></p>
+</div>
+
+<script>
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendPosition, showError);
+    } else {
+        document.getElementById("status").innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+
+function sendPosition(position) {
+    let latitude = position.coords.latitude;
+    let longitude = position.coords.longitude;
+
+    document.getElementById("status").innerHTML = `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+    // Send data to Django backend
+    fetch('/get_weather/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ lat: latitude, lon: longitude })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            displayWeather(data.weather);
+        } else {
+            document.getElementById("status").innerHTML = "Could not retrieve weather.";
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function displayWeather(weather) {
+    document.getElementById("weather").style.display = "block";
+    document.getElementById("weather-icon").src = `http://openweathermap.org/img/w/${weather.icon}.png`;
+    document.getElementById("city").innerText = weather.city;
+    document.getElementById("temperature").innerText = weather.temperature;
+    document.getElementById("description").innerText = weather.description;
+}
+
+// Function to get CSRF token for Django
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showError(error) {
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            document.getElementById("status").innerHTML = "User denied the request for Geolocation.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            document.getElementById("status").innerHTML = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            document.getElementById("status").innerHTML = "The request to get user location timed out.";
+            break;
+        case error.UNKNOWN_ERROR:
+            document.getElementById("status").innerHTML = "An unknown error occurred.";
+            break;
+    }
+}
+</script>
+
+</body>
+</html>
