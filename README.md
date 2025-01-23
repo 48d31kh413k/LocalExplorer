@@ -18,7 +18,7 @@ Local Explorer is an innovative web application that combines geolocation, real-
 - APIs: 
   - OpenWeatherMap
   - Google Maps Places
-  - Google Directions
+  - Google Directions (If the directions do not show up, please ensure that the Directions API is enabled in your Google Cloud Console and that your API key is correctly configured.)
 
 ## 📋 Prerequisites
 - Python 3.10+
