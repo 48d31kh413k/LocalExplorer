@@ -9,16 +9,19 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 
+# Load environment variables (API keys) from .env file
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
 
-seen_places = set()
+seen_places = set() # Initialize a set to track seen places for activity suggestions
 
+# Endpoint to get new activity suggestion
 @csrf_exempt
 def get_new_suggestion(request):
     if request.method == "POST":
+        # Parse the request body for dismissed activity and current place
         data = json.loads(request.body)
         dismissed_activity = data.get("dismissed_activity")
         place = data.get("place")
@@ -33,26 +36,35 @@ def get_new_suggestion(request):
         time_of_day = request.session.get("time_of_day")
         city = request.session.get("city")
 
+        # Get new activity suggestions
         new_activities = get_activity_suggestions(weather, time_of_day, city, dismissed_activity)
         available_activities = []
+
+        # Check for each activity if the place is open based on opening hours
         for activity in new_activities:
             place_name = activity['place']
             opening_hours = get_place_opening_hours(place_name)
             if opening_hours and is_place_open(opening_hours):
                 available_activities.append(activity)
+        # Filter activities that are not in the "seen" activities list
         filtered_activities = [
             activity for activity in available_activities if activity["place"] not in request.session["seen_activities"]
         ]
 
+        # If new available activities exist, add them to the session and return them
         if filtered_activities:
             request.session["seen_activities"].append(filtered_activities[0]["place"])
             return JsonResponse({"new_activity": filtered_activities})
+        
+        # If there are  new available activities, return it
         if available_activities:
             return JsonResponse({"new_activity": available_activities})
+        # Return a message if no activities are available
         return JsonResponse({"message": "No new activities available"})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 
+# Helper function to remove duplicate activities based on "place"
 def remove_duplicate_activities(activities):
     unique_activities = []
     seen_places = set()
@@ -65,6 +77,7 @@ def remove_duplicate_activities(activities):
 
     return unique_activities
 
+# Function to generate activity suggestions based on weather, time of day, and location
 def get_activity_suggestions(weather, time_of_day, location, user_feedback=None):
     prompt = f"""
     You are an assistant that provides structured activity suggestions. 
@@ -109,6 +122,7 @@ def get_activity_suggestions(weather, time_of_day, location, user_feedback=None)
         print("Error parsing JSON:", e)
         return []
 
+# Function to store suggested activities in the session to avoid repetition
 def store_suggested_activities(request, activities):
     """Stores suggested activities in the user's session to avoid repetition."""
     if "seen_activities" not in request.session:
@@ -136,6 +150,7 @@ def parse_opening_hours(hours_list):
             parsed_hours[day] = (start_time, end_time)
     return parsed_hours
 
+# Function to check if a place is open based on its parsed opening hours
 def is_place_open(parsed_hours):
     current_day = datetime.now().strftime("%A")  # Get current day (e.g., "Monday")
     current_time = datetime.now().strftime("%H:%M")  # Get current time (24-hour format)
@@ -145,6 +160,7 @@ def is_place_open(parsed_hours):
         return open_time <= current_time <= close_time  # Check if current time is within the range
     return False
 
+# Function to fetch opening hours for a given place using Google Places API
 def get_place_opening_hours(place_name):
     url = f'https://maps.googleapis.com/maps/api/place/textsearch/json?query={place_name}&key={GOOGLE_MAPS_API_KEY}'
     response = requests.get(url)
@@ -175,13 +191,15 @@ def get_place_opening_hours(place_name):
     else:
         print("Error fetching place details:", response.status_code)
         return None
-    
+
+# Render the location page with Google Maps API key
 def location_page(request):
     """Renders the HTML page with location button"""
     google_maps_api_key = os.getenv("GOOGLE_MAPS_API_KEY")
     return render(request, "weather/location.html", {"google_maps_api_key": google_maps_api_key})
 
-@csrf_exempt  # Disable CSRF for testing (use proper CSRF handling in production)
+# Endpoint to fetch weather data based on latitude and longitude
+@csrf_exempt
 def get_weather(request):
     if request.method == "POST":
         try:
@@ -189,6 +207,7 @@ def get_weather(request):
             latitude = data.get("lat")
             longitude = data.get("lon")
 
+            # Check if coordinates are provided
             if not latitude or not longitude:
                 return JsonResponse({"status": "error", "message": "Missing coordinates"}, status=400)
 

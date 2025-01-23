@@ -197,7 +197,7 @@
     
     <script>
     let map;
-
+// Initializes the Google Map with user's location
 function initMap() {
     const lat = parseFloat(localStorage.getItem('lat'));
     const lng = parseFloat(localStorage.getItem('lng'));
@@ -221,6 +221,7 @@ function initMap() {
     });
 }
 
+// Fetches the user's location using geolocation API
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(sendPosition, showError);
@@ -229,6 +230,7 @@ function getLocation() {
     }
 }
 
+// Sends the user's location to the server
 function sendPosition(position) {
     let latitude = position.coords.latitude;
     let longitude = position.coords.longitude;
@@ -259,6 +261,7 @@ function sendPosition(position) {
     .catch(error => console.error('Error:', error));
 }
 
+// Display weather information on the page
 function displayWeather(weather) {
     document.getElementById("weather").style.display = "block";
     document.getElementById("city").textContent = weather.city;
@@ -267,7 +270,7 @@ function displayWeather(weather) {
     updateWeather(weather);
 }
 
-
+// Requests a new suggestion for activities
 function requestNewSuggestion() {
     if (!selectedActivity) {
         console.error("No activity selected");
@@ -290,6 +293,8 @@ function requestNewSuggestion() {
     })
     .catch(error => console.error("Error fetching new suggestion:", error));
 }
+
+// Display suggested activities
 function createActivityCard(activity) {
     const card = document.createElement('div');
     card.classList.add('activity-card', 'animate-slide-in');
@@ -312,6 +317,7 @@ function createActivityCard(activity) {
     return card;
 }
 
+// Displays a list of activities with animated cards in the activities container.
 function displayAnimatedActivities(activities) {
     const container = document.getElementById('activities');
     const activityList = document.getElementById('activity');
@@ -325,7 +331,7 @@ function displayAnimatedActivities(activities) {
     container.style.display = 'block';
 }
 
-
+// Searches for a place using the Google Places API and shows directions to it.
 function searchPlace(placeName) {
     if (!map) {
         console.error("Map not initialized");
@@ -358,6 +364,7 @@ function searchPlace(placeName) {
     });
 }
 
+// Shows directions from the user's current location to the provided destination.
 function showDirections(destination) {
     if (!map) {
         console.error("Map not initialized.");
@@ -394,7 +401,7 @@ function showDirections(destination) {
     });
 }
 
-
+// Displays a list of activity suggestions with clickable links to show directions.
 function displayActivities(activities) {
     document.getElementById("activities").style.display = "block";
     const activityList = document.querySelector("#activity");
@@ -434,6 +441,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Handles and displays error messages related to geolocation issues.
 function showError(error) {
     switch (error.code) {
         case error.PERMISSION_DENIED:
@@ -451,6 +459,7 @@ function showError(error) {
     }
 }
 
+// Determines the background and temperature class based on the weather description and temperature.
 function updateWeatherDisplay(temperature, description) {
     const backgrounds = {
         'clear': 'linear-gradient(135deg, #00BFFF, #1E90FF)',
@@ -473,6 +482,7 @@ function updateWeatherDisplay(temperature, description) {
     };
 }
 
+// Updates the weather display with the provided weather information.
 function updateWeather(weather) {
     const weatherBox = document.getElementById("weather");
     const { background, tempClass } = updateWeatherDisplay(
