@@ -4,20 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather & Geolocation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        .weather-box {
-            border: 1px solid #ddd;
-            padding: 15px;
-            width: 300px;
-            text-align: center;
-            margin-top: 20px;
-        }
+    /* General Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    /* Header */
+    h2 {
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    /* Buttons */
+    button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+
+    /* Status */
+    #status {
+        font-size: 14px;
+        color: #555;
+        margin-top: 10px;
+    }
+
+    /* Weather Box */
+    .weather-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        width: 320px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+
+    .weather-box h3 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .weather-box p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    /* Activities Section */
+    #activities {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        width: 350px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #activities h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        text-align: center;
+    }
+
+    #activity {
+        list-style: none;
+        margin-top: 10px;
+    }
+
+    #activity li {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.3s ease;
+    }
+
+    #activity li:hover {
+        background: #e9ecef;
+    }
+
+    #activity li a {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    #newSuggestionBtn {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Map */
+    #map {
+        width: 100%;
+        max-width: 600px;
+        height: 400px;
+        border-radius: 10px;
+    /* Map section */
+    /* Container that holds both map and activities */
+    .container {
+        display: flex;
+        height: 100vh; /* Full height of the viewport */
+    }
+
+    /* Map section */
+    .map-container {
+        flex: 1; /* Takes up remaining space */
+        background-color: #f1f1f1; /* Background color for the map */
+        /* Optional: set a fixed width if you want */
+        width: 50%; /* Or you can use a percentage, like 50% for each section */
+    }
+
+    /* Activities section */
+    .activities-container {
+        flex: 1; /* Takes up remaining space */
+        padding: 20px; /* Padding inside the activities section */
+        overflow-y: auto; /* Allows scrolling if content overflows */
+        background-color: #ffffff; /* White background for activities */
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Optional: a slight shadow between sections */
+    }
+
+    
+
         
     </style>
 </head>
 <body>
     
-    <h2>Click the button to get your location and weather</h2>
+    <h2>Discover Your Location & Weather</h2>
     <button onclick="getLocation()">Get Weather</button>
     
     <p id="status"></p>
@@ -29,18 +180,19 @@
     </div>
     
     <br>
-    
-    <div id="activities" style="display: none;">
-        <h3>Suggested Activities</h3>
-        <ul id="activity"></ul>
+    <div class="container">
 
-        <button id="newSuggestionBtn" style="display:none;" onclick="requestNewSuggestion()">New Suggestion</button>
+        <div class="activities-container" id="activities" style="display: none;">
+            <h3>Suggested Activities</h3>
+            <ul id="activity"></ul>
+            
+            <button id="newSuggestionBtn" style="display:none;" onclick="requestNewSuggestion()">New Suggestion</button>
+        </div>
+        
+        <br>
+        <div class="map-container" id="map" style="width: 600px; height: 400px;"></div>
+        
     </div>
-    
-    <br>
-    <div id="map" style="width: 600px; height: 400px;"></div>
-    
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
     
     <script>
