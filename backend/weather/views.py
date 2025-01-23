@@ -23,7 +23,6 @@ def get_new_suggestion(request):
         dismissed_activity = data.get("dismissed_activity")
         place = data.get("place")
 
-        # print(f"Dismissed activity: at {place}") //DEBUG
         if "seen_activities" in request.session:
             request.session["seen_activities"] = [
                 place for place in request.session["seen_activities"] if place != dismissed_activity
@@ -35,16 +34,21 @@ def get_new_suggestion(request):
         city = request.session.get("city")
 
         new_activities = get_activity_suggestions(weather, time_of_day, city, dismissed_activity)
+        available_activities = []
+        for activity in new_activities:
+            place_name = activity['place']
+            opening_hours = get_place_opening_hours(place_name)
+            if opening_hours and is_place_open(opening_hours):
+                available_activities.append(activity)
         filtered_activities = [
-            activity for activity in new_activities if activity["place"] not in request.session["seen_activities"]
+            activity for activity in available_activities if activity["place"] not in request.session["seen_activities"]
         ]
 
         if filtered_activities:
             request.session["seen_activities"].append(filtered_activities[0]["place"])
-            # print("New activities:", filtered_activities) //DEBUG
             return JsonResponse({"new_activity": filtered_activities})
-        if new_activities:
-            return JsonResponse({"new_activity": new_activities})
+        if available_activities:
+            return JsonResponse({"new_activity": available_activities})
         return JsonResponse({"message": "No new activities available"})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
@@ -90,9 +94,7 @@ def get_activity_suggestions(weather, time_of_day, location, user_feedback=None)
         )
 
         response_text = response['choices'][0]['message']['content'].strip()
-        
-        # print("Raw OpenAI Response:", response_text) //DEBUG
-        
+                
         # Attempt to parse JSON
         activity_data = json.loads(response_text)
 
@@ -119,7 +121,6 @@ def store_suggested_activities(request, activities):
     for activity in activities:
         if activity["place"] not in seen_places:
             seen_places.append(activity["place"])
-    # print("Seen places:", seen_places) //DEBUG
     request.session["seen_activities"] = seen_places
     return activities
 
@@ -195,7 +196,6 @@ def get_weather(request):
             weather_url = f'https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={WEATHER_API_KEY}&units=metric'
             response = requests.get(weather_url)
 
-            # print(response.json()) //DEBUG
             if response.status_code == 200:
                 weather_data = response.json()
                 weather = {
@@ -222,7 +222,6 @@ def get_weather(request):
                 for activity in activities:
                     place_name = activity['place']
                     opening_hours = get_place_opening_hours(place_name)
-                    # print(place_name, opening_hours) //DEBUG
                     if opening_hours and is_place_open(opening_hours):
                         available_activities.append(activity)
                 available_activities = remove_duplicate_activities(available_activities)
@@ -232,7 +231,6 @@ def get_weather(request):
                     "weather": weather,
                     "activities": available_activities
                     })
-                # print(json.dumps(response_data, indent=4)) //DEBUG
                 return JsonResponse(response_data)
             else:
                 return JsonResponse({"status": "error", "message": "Could not fetch weather"}, status=500)

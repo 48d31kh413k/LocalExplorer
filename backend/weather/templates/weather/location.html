@@ -197,6 +197,7 @@
     
     <script>
     let map;
+
 function initMap() {
     const lat = parseFloat(localStorage.getItem('lat'));
     const lng = parseFloat(localStorage.getItem('lng'));
@@ -266,58 +267,6 @@ function displayWeather(weather) {
     updateWeather(weather);
 }
 
-function formatOpeningHours(openingHours) {
-    if (!openingHours || !openingHours.weekday_text) return "Opening hours not available";
-
-    const today = new Date().getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-    return openingHours.weekday_text[today - 1] || "Opening hours not available"; 
-}
-
-function updateActivityInfo(placeName, openingHours) {
-    const activityItems = document.querySelectorAll("#activity li");
-
-    activityItems.forEach(item => {
-        if (item.querySelector("a").textContent.includes(placeName)) {
-            const hoursDiv = item.querySelector(".opening-hours");
-            // hoursDiv.textContent = `Opening Hours: ${openingHours}`;
-        }
-    });
-}
-
-function dismissActivity(activityElement, activityName, placeName) {
-    fetch('/get_new_suggestion/', {
-        method: 'POST',
-        body: JSON.stringify({ dismissed_activity: activityName, place: placeName }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        // console.log("New activities received:", data.new_activities); // Debugging
-
-        if (data.new_activities) {
-            let activityList = document.getElementById("activity");
-            activityList.innerHTML = ''; // Clear previous activities
-            // console.log("New activities:", data.new_activities); // Debug log
-            data.new_activities.forEach(activity => {
-                let newListItem = document.createElement("li");
-                let newMapLink = document.createElement("a");
-                newMapLink.href = "#";
-                newMapLink.textContent = `${activity.activity} at ${activity.place}`;
-                newMapLink.onclick = (e) => {
-                    e.preventDefault();
-                    searchPlace(activity.place);
-                };
-
-                newListItem.appendChild(newMapLink);
-                activityList.appendChild(newListItem);
-            });
-        } else {
-            console.log("No more suggestions available.");
-            activityElement.textContent = "No more suggestions available.";
-        }
-    })
-    .catch(error => console.error("Error fetching new suggestion:", error));
-}
 
 function requestNewSuggestion() {
     if (!selectedActivity) {
@@ -376,26 +325,6 @@ function displayAnimatedActivities(activities) {
     container.style.display = 'block';
 }
 
-function getPlaceDetails(placeId, placeName) {
-    const service = new google.maps.places.PlacesService(map);
-    const request = {
-        placeId: placeId,
-        fields: ['name', 'formatted_address', 'opening_hours']
-    };
-
-    service.getDetails(request, (place, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-            // console.log(`Details for ${placeName}:`, place); // Debug log
-
-            const openingHours = place.opening_hours ? formatOpeningHours(place.opening_hours) : "Opening hours not available";
-            // console.log(`Opening Hours for ${placeName}:`, openingHours); // Debug log
-            
-            updateActivityInfo(placeName, openingHours);
-        } else {
-            console.error("Place details not found:", status);
-        }
-    });
-}
 
 function searchPlace(placeName) {
     if (!map) {
@@ -410,20 +339,14 @@ function searchPlace(placeName) {
     };
     
     service.findPlaceFromQuery(request, (results, status) => {
-        // console.log("Place search status:", status); // Debug log
         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
             const place = results[0];
-            // console.log("Place found:", place); // Debug log
-            // console.log("Place id:", place.place_id); // Debug log
-            // console.log("Place found:", place); // Debug log
             if (place.geometry && place.geometry.location){
                 const destination = place.geometry.location; // Extract location
                 const destinationCoordinates = {
                     lat: destination.lat(),
                     lng: destination.lng()
                 };
-                getPlaceDetails(place.place_id, place.name);
-                // console.log("Destination coordinates in searchplace funtion:", destinationCoordinates); //Debug log
                 showDirections(destinationCoordinates);
             }
             else {
@@ -436,8 +359,6 @@ function searchPlace(placeName) {
 }
 
 function showDirections(destination) {
-    // console.log("showDirections called with destination:", destination);
-
     if (!map) {
         console.error("Map not initialized.");
         return;
@@ -457,9 +378,6 @@ function showDirections(destination) {
     }
 
     const origin = { lat: parseFloat(lat), lng: parseFloat(lng) };
-    // console.log("Origin coordinates:", origin); //DEBUG log
-    // console.log("Destination coordinates:", destination); //DEBUG log
-
     const request = {
         origin: origin,
         destination: destination,
@@ -468,7 +386,6 @@ function showDirections(destination) {
 
     directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-            // console.log("Directions response:", result); //DEBUG log
             directionsRenderer.setDirections(result);
         } else {
             console.error("Directions request failed:", status);
@@ -490,7 +407,6 @@ function displayActivities(activities) {
         mapLink.textContent = `${activity.activity} at ${activity.place}`;
         mapLink.onclick = (e) => {
             e.preventDefault();
-            // console.log("Searching for place:", activity.place); // Debug log
             searchPlace(activity.place);
             selectedActivity = activity; // Store clicked activity
             document.getElementById("newSuggestionBtn").style.display = "block"; // Show button
@@ -498,7 +414,6 @@ function displayActivities(activities) {
        
 
         listItem.appendChild(mapLink);
-        // listItem.appendChild(openingHoursDiv);
         activityList.appendChild(listItem);
     });
 }
