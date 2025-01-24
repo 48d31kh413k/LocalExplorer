@@ -32,7 +32,7 @@ Local Explorer is an innovative web application that combines geolocation, real-
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/yourusername/local-explorer.git
-cd local-explorer
+cd LocalExplorer
 ```
 
 ### 2. Create Virtual Environment
@@ -68,10 +68,11 @@ python manage.py runserver
 
 ## 🔍 How to Use
 1. Open the web application
-2. Click "Get Weather" button
-3. Allow location access
-4. View weather and activity suggestions
-5. Click on activities to see map details and directions
+2. Open http://127.0.0.1:8000/location in your web browser
+3. Click "Get Weather" button
+4. Allow location access
+5. View weather and activity suggestions
+6. Click on activities to see map details and directions
 
 ## 📂 Project Structure
 ```
