@@ -99,9 +99,6 @@ Ensure all API keys are kept confidential and not pushed to version control.
 4. Push to the branch
 5. Create a Pull Request
 
-## 📄 License
-[Specify your license, e.g., MIT License]
-
 ## 🐞 Troubleshooting
 - Verify API keys
 - Check internet connectivity
