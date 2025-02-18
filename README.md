@@ -1,7 +1,7 @@
-# Local Explorer: Your Personal Activity and Weather Guide
+# Navix: Your Personal Activity and Weather Guide
 
 ## 🌍 Overview
-Local Explorer is an innovative web application that combines geolocation, real-time weather data, and personalized activity suggestions to help users discover exciting local experiences.
+Navix is an innovative web application that combines geolocation, real-time weather data, and personalized activity suggestions to help users discover exciting local experiences.
 
 ## ✨ Features
 - Real-time geolocation tracking
