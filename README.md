@@ -31,7 +31,7 @@ Navix is an innovative web application that combines geolocation, real-time weat
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/local-explorer.git
+git clone https://github.com/48d31kh413k/Navix.git
 cd LocalExplorer
 ```
 
